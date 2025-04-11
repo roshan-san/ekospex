@@ -4,10 +4,13 @@ import io
 import os
 import sys
 import traceback
-
 import cv2
 import pyaudio
 import PIL.Image
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 from google import genai
 API_KEY = os.getenv("GOOGLE_API_KEY")
