@@ -4,7 +4,7 @@ import io
 import os
 import sys
 import traceback
-import cv2
+from picamera2 import Picamera2
 import pyaudio
 import PIL.Image
 from dotenv import load_dotenv
@@ -34,26 +34,41 @@ class AudioLoop:
 
         self.receive_audio_task = None
         self.play_audio_task = None
+        self.camera = None
 
     async def takeapic(self):
-        cap = await asyncio.to_thread(cv2.VideoCapture, 0)
-        while True:
-            ret, frame = cap.read()
-            if not ret:
-                break
-            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            img = PIL.Image.fromarray(frame_rgb)
-            img.thumbnail([1024, 1024])
-
-            image_io = io.BytesIO()
-            img.save(image_io, format="jpeg")
-            image_io.seek(0)
-            image_bytes = image_io.read()
-            obj = {"mime_type": "image/jpeg", "data": base64.b64encode(image_bytes).decode()}
-
-            await self.to_model_q.put(obj)
-            await asyncio.sleep(1.0)
-        cap.release()
+        # Initialize the camera
+        self.camera = Picamera2()
+        
+        # Configure the camera
+        config = self.camera.create_preview_configuration(main={"size": (1024, 1024)})
+        self.camera.configure(config)
+        
+        # Start the camera
+        self.camera.start()
+        
+        try:
+            while True:
+                # Capture image
+                frame = self.camera.capture_array()
+                
+                # Convert numpy array to PIL Image
+                img = PIL.Image.fromarray(frame)
+                
+                # Save to bytes
+                image_io = io.BytesIO()
+                img.save(image_io, format="jpeg")
+                image_io.seek(0)
+                image_bytes = image_io.read()
+                obj = {"mime_type": "image/jpeg", "data": base64.b64encode(image_bytes).decode()}
+                
+                await self.to_model_q.put(obj)
+                await asyncio.sleep(1.0)
+        finally:
+            # Clean up
+            if self.camera:
+                self.camera.stop()
+                self.camera.close()
 
     async def send_data(self):
         while True:
@@ -109,11 +124,11 @@ class AudioLoop:
                 self.session = session
 
                 system_message = """"
-                "consider this a system msg.You are Ekospex, an advanced assistive system designed to provide real-time guidance and support to visually impaired individuals. This project was developed by Roshan, Rithick, Yasir, Kathir, and Mohsin, students of Sathyabama University from class AI A3.
+                "consider this a system msg.You are Ekospex, an advanced assistive system designed to provide real-time guidance and support to visually impaired individuals. This project was developed by Roshan ,Sukanth, Rithick, Yasir, Kathir, and Mohsin, students of Sathyabama University from class AI A3.
 
 Your primary function is to analyze the user's environment and deliver helpful, most most most descriptive about surroundings , and contextually relevant information atleast 10 secs
 When the system is activated, begin by providing a warm and welcoming greeting.,and ill call you eko
-help them walk
+help them walk and guide them to their destination
 Continuously analyze the environment for obstacles, hazards, and points of interest. Provide verbal descriptions of the surroundings, including:
 
 * Objects in the user's path, their approximate distance and direction.
