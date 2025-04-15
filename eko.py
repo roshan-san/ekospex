@@ -37,38 +37,53 @@ class AudioLoop:
         self.camera = None
 
     async def takeapic(self):
-        # Initialize the camera
-        self.camera = Picamera2()
-        
-        # Configure the camera
-        config = self.camera.create_preview_configuration(main={"size": (1024, 1024)})
-        self.camera.configure(config)
-        
-        # Start the camera
-        self.camera.start()
-        
         try:
+            # Initialize the camera with Pi Zero W specific settings
+            self.camera = Picamera2()
+            
+            # Configure the camera for Pi Zero W
+            # Using lower resolution for better performance
+            config = self.camera.create_preview_configuration(
+                main={"size": (640, 480), "format": "RGB888"},
+                buffer_count=2  # Reduced buffer count for Pi Zero W
+            )
+            self.camera.configure(config)
+            
+            # Start the camera
+            self.camera.start()
+            
             while True:
-                # Capture image
-                frame = self.camera.capture_array()
-                
-                # Convert numpy array to PIL Image
-                img = PIL.Image.fromarray(frame)
-                
-                # Save to bytes
-                image_io = io.BytesIO()
-                img.save(image_io, format="jpeg")
-                image_io.seek(0)
-                image_bytes = image_io.read()
-                obj = {"mime_type": "image/jpeg", "data": base64.b64encode(image_bytes).decode()}
-                
-                await self.to_model_q.put(obj)
-                await asyncio.sleep(1.0)
+                try:
+                    # Capture image with timeout
+                    frame = self.camera.capture_array()
+                    
+                    # Convert numpy array to PIL Image
+                    img = PIL.Image.fromarray(frame)
+                    
+                    # Save to bytes with reduced quality for Pi Zero W
+                    image_io = io.BytesIO()
+                    img.save(image_io, format="jpeg", quality=85)  # Reduced quality for better performance
+                    image_io.seek(0)
+                    image_bytes = image_io.read()
+                    obj = {"mime_type": "image/jpeg", "data": base64.b64encode(image_bytes).decode()}
+                    
+                    await self.to_model_q.put(obj)
+                    await asyncio.sleep(1.0)
+                except Exception as e:
+                    print(f"Error capturing frame: {e}")
+                    await asyncio.sleep(1.0)  # Wait before retrying
+                    continue
+        except Exception as e:
+            print(f"Camera initialization error: {e}")
+            raise
         finally:
             # Clean up
             if self.camera:
-                self.camera.stop()
-                self.camera.close()
+                try:
+                    self.camera.stop()
+                    self.camera.close()
+                except Exception as e:
+                    print(f"Error closing camera: {e}")
 
     async def send_data(self):
         while True:
