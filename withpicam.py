@@ -37,7 +37,7 @@ class AudioLoop:
 
    async def takeapic(self):
     picam2 = Picamera2()
-    config = picam2.create_still_configuration(main={"format": "RGB888", "size": (1024, 768)}) # Adjust size as needed
+    config = picam2.create_still_configuration(main={"format": "RGB888", "size": (640, 480)}) # Adjust size as needed
     picam2.configure(config)
     picam2.start()
     await asyncio.sleep(0.1) # Give the camera a moment to warm up
