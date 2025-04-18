@@ -1,5 +1,5 @@
 google-genai
-picamera2
+opencv-python
 pyaudio
 pillow
 python-dotenv 
