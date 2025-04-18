@@ -17,17 +17,12 @@ Ekospex is an advanced assistive system designed to provide real-time guidance a
    cd ekospex
    ```
 
-2. Install the required dependencies:
+2. Activate the existing virtual environment:
    ```
-   pip install -r requirements.txt
-   ```
-
-3. Create a `.env` file with your Google API key:
-   ```
-   GOOGLE_API_KEY="your_api_key_here"
+   source ven/bin/activate
    ```
 
-4. Make the installation script executable and run it:
+3. Make the installation script executable and run it:
    ```
    chmod +x install_ekospex_service.sh
    ./install_ekospex_service.sh
@@ -66,9 +61,15 @@ sudo journalctl -u ekospex.service -f
 
 If you want to run Ekospex manually instead of as a service:
 
-```
-python eko.py
-```
+1. Activate the virtual environment:
+   ```
+   source ven/bin/activate
+   ```
+
+2. Run the application:
+   ```
+   python eko.py
+   ```
 
 ## Requirements
 
@@ -77,4 +78,4 @@ python eko.py
 - Microphone
 - Speakers
 - Internet connection
-- Google API key with access to Gemini API 
+- Google API key with access to Gemini API

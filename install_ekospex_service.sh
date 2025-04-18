@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Change to the directory where the script is located
+cd "$(dirname "$0")"
+
 # Make the start script executable
 chmod +x "$(dirname "$0")/start_ekospex.sh"
 

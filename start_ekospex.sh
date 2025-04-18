@@ -3,10 +3,8 @@
 # Change to the directory where the script is located
 cd "$(dirname "$0")"
 
-# Activate virtual environment if it exists
-if [ -d "venv" ]; then
-    source venv/bin/activate
-fi
+# Activate the existing virtual environment
+source ven/bin/activate
 
 # Set environment variables
 export PYTHONUNBUFFERED=1
