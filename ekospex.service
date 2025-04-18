@@ -1,0 +1,14 @@
+[Unit]
+Description=Ekospex Python Service
+After=network.target
+
+[Service]
+Type=simple
+User=admin
+WorkingDirectory=/home/admin/ekospex
+ExecStart=/bin/bash -c 'source venv/bin/activate && python eko.py'
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target 
