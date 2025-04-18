@@ -35,32 +35,41 @@ class AudioLoop:
         self.receive_audio_task = None
         self.play_audio_task = None
 
-   async def takeapic(self):
-    picam2 = Picamera2()
-    config = picam2.create_still_configuration(main={"format": "RGB888", "size": (640, 480)}) # Adjust size as needed
-    picam2.configure(config)
-    picam2.start()
-    await asyncio.sleep(0.1) # Give the camera a moment to warm up
-
-    while True:
+    async def takeapic(self):
+        picam2 = None
         try:
-            array = await asyncio.to_thread(picam2.capture_array)
-            img = PIL.Image.fromarray(array)
-            img.thumbnail([1024, 1024])
+            picam2 = Picamera2()
+            config = picam2.create_still_configuration(main={"format": "RGB888", "size": (640, 480)}) # Adjust size as needed
+            picam2.configure(config)
+            picam2.start()
+            await asyncio.sleep(0.1) # Give the camera a moment to warm up
 
-            image_io = io.BytesIO()
-            img.save(image_io, format="jpeg")
-            image_io.seek(0)
-            image_bytes = image_io.read()
-            obj = {"mime_type": "image/jpeg", "data": base64.b64encode(image_bytes).decode()}
+            while True:
+                try:
+                    array = await asyncio.to_thread(picam2.capture_array)
+                    img = PIL.Image.fromarray(array)
+                    img.thumbnail([1024, 1024])
 
-            await self.to_model_q.put(obj)
-            await asyncio.sleep(1.0)
+                    image_io = io.BytesIO()
+                    img.save(image_io, format="jpeg")
+                    image_io.seek(0)
+                    image_bytes = image_io.read()
+                    obj = {"mime_type": "image/jpeg", "data": base64.b64encode(image_bytes).decode()}
+
+                    await self.to_model_q.put(obj)
+                    await asyncio.sleep(1.0)
+                except Exception as e:
+                    print(f"Error capturing image: {e}")
+                    await asyncio.sleep(1.0) # Avoid busy-looping on error
         except Exception as e:
-            print(f"Error capturing image: {e}")
-            await asyncio.sleep(1.0) # Avoid busy-looping on error
-    picam2.stop()
-    picam2.close()
+            print(f"Error initializing camera: {e}")
+        finally:
+            if picam2:
+                try:
+                    picam2.stop()
+                    picam2.close()
+                except Exception as e:
+                    print(f"Error closing camera: {e}")
 
     async def send_data(self):
         while True:
