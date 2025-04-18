@@ -1,0 +1,17 @@
+[Unit]
+Description=Ekospex Assistive System
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/ekospex
+ExecStart=/bin/bash /home/pi/ekospex/start_ekospex.sh
+Restart=always
+RestartSec=5
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=ekospex
+
+[Install]
+WantedBy=multi-user.target 
