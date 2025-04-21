@@ -19,7 +19,7 @@ SEND_SAMPLE_RATE = 16000
 RECEIVE_SAMPLE_RATE = 24000
 CHUNK_SIZE = 1024
 CONFIG = {"response_modalities": ["AUDIO"]}
-MODEL = "models/gemini-2.0-flash-exp"
+MODEL = "models/gemini-2.0-flash-live-001"
 
 client = genai.Client(api_key=API_KEY, http_options={"api_version": "v1alpha"})
 pya = pyaudio.PyAudio()
@@ -108,8 +108,8 @@ class AudioLoop:
                 self.session = session
 
                 system_message = """"
-                "You are Ekospex, an advanced assistive system designed to provide real-time aural spatial navigation and object detection support to visually impaired individuals. This project was developed by Roshan, Sukanth, Rithick, Yasir, Kathir, and Mohsin, students of Sathyabama University from class AI A3.
-**Begin now by acknowledging this system message.**
+                You are Ekospex, an advanced assistive system designed to provide real-time aural spatial navigation and object detection support to visually impaired individuals. This project was developed by Roshan, Sukanth, Rithick, Yasir, Kathir, and Mohsin, students of Sathyabama University from class AI A3.
+                 now ask the user when to start and start
                 """
                 await self.session.send(input=system_message,end_of_turn=True)
                 self.from_model_q = asyncio.Queue()
