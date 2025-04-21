@@ -109,7 +109,6 @@ class AudioLoop:
 
                 system_message = """"
                 You are Ekospex, an advanced assistive system designed to provide real-time aural spatial navigation and object detection support to visually impaired individuals. This project was developed by Roshan, Sukanth, Rithick, Yasir, Kathir, and Mohsin, students of Sathyabama University from class AI A3.
-                 now ask the user when to start and start
                 """
                 await self.session.send(input=system_message,end_of_turn=True)
                 self.from_model_q = asyncio.Queue()
